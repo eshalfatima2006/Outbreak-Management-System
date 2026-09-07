@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Admin Settings -- PHIN{% endblock %}
+{% block page_title %}Admin Settings{% endblock %}
+{% block page_subtitle %}NFR 2.1.1 -- Dynamic Configurability &amp; NFR 2.8 -- User Management{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-4">
+  <a href="{{ url_for('dashboard') }}">Dashboard</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>Admin Settings</span>
+</div>
+
+<div class="row g-4">
+  <!-- -- Custom Fields -- -->
+  <div class="col-lg-6" data-aos="fade-up">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-sliders me-2 text-teal"></i>Dynamic Custom Fields
+          <span class="badge badge-teal ms-2">NFR 2.1.1</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div style="padding:12px;background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:8px;margin-bottom:20px">
+          <p style="font-size:12px;color:var(--text-muted);margin:0;line-height:1.6">
+            <i class="fa-solid fa-bolt me-1 text-teal"></i>
+            Add custom fields to entities <strong>without restarting</strong> the server.
+            New fields appear instantly on Create/Edit forms.
+          </p>
+        </div>
+
+        <!-- Add Field Form -->
+        <form method="POST" style="margin-bottom:24px">
+          <input type="hidden" name="action" value="add_field" />
+          <div class="row g-2">
+            <div class="col-md-5">
+              <div class="form-group mb-0">
+                <label class="form-label">Entity</label>
+                <select name="entity_type" class="form-select">
+                  <option value="Case">Case</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-0">
+                <label class="form-label">Field Name</label>
+                <input type="text" name="field_name" class="form-control" placeholder="e.g. Quarantine Floor" required />
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group mb-0">
+                <label class="form-label">Type</label>
+                <select name="field_type" class="form-select">
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="date">Date</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm mt-3">
+            <i class="fa-solid fa-plus"></i> Add Custom Field
+          </button>
+        </form>
+
+        <!-- Existing Fields -->
+        {% if custom_fields %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>Entity</th><th>Field Name</th><th>Type</th><th style="text-align:right">Remove</th></tr>
+            </thead>
+            <tbody>
+              {% for cf in custom_fields %}
+              <tr>
+                <td><span class="badge badge-teal">{{ cf.entity_type }}</span></td>
+                <td style="font-weight:600">{{ cf.field_name }}</td>
+                <td><span class="badge badge-gray">{{ cf.field_type }}</span></td>
+                <td style="text-align:right">
+                  <form id="del-cf-{{ cf.id }}" method="POST">
+                    <input type="hidden" name="action" value="delete_field" />
+                    <input type="hidden" name="cf_id" value="{{ cf.id }}" />
+                    <button type="button" class="btn btn-danger btn-sm btn-icon"
+                      onclick="confirmDelete('del-cf-{{ cf.id }}', 'custom field')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:30px">
+          <i class="fa-solid fa-sliders" style="font-size:32px;color:#CBD5E1;display:block;margin-bottom:10px"></i>
+          <p style="color:var(--text-muted);font-size:13px">No custom fields defined yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- -- User Management -- -->
+  <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-users-gear me-2 text-teal"></i>User Management
+          <span class="badge badge-teal ms-2">NFR 2.8</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <!-- Add User Form -->
+        <form method="POST" style="margin-bottom:24px">
+          <input type="hidden" name="action" value="add_user" />
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px">
+            Add New User
+          </div>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <input type="text" name="new_username" class="form-control" placeholder="Username" required />
+            </div>
+            <div class="col-md-4">
+              <input type="password" name="new_password" class="form-control" placeholder="Password" required />
+            </div>
+            <div class="col-md-4">
+              <select name="new_role" class="form-select">
+                <option value="investigator">Investigator</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm mt-3">
+            <i class="fa-solid fa-user-plus"></i> Create User
+          </button>
+        </form>
+
+        <div class="section-divider"></div>
+
+        <!-- User Table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>Username</th><th>Role</th><th style="text-align:right">Remove</th></tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--teal),var(--cyan));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">
+                      {{ u.username[0]|upper }}
+                    </div>
+                    <span style="font-weight:600">{{ u.username }}</span>
+                    {% if u.id == current_user.id %}<span class="badge badge-teal" style="font-size:9px">You</span>{% endif %}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge {% if u.role == 'admin' %}badge-confirmed{% else %}badge-probable{% endif %}">
+                    {{ u.role }}
+                  </span>
+                </td>
+                <td style="text-align:right">
+                  {% if u.id != current_user.id %}
+                  <form id="del-user-{{ u.id }}" method="POST">
+                    <input type="hidden" name="action" value="delete_user" />
+                    <input type="hidden" name="user_id" value="{{ u.id }}" />
+                    <button type="button" class="btn btn-danger btn-sm btn-icon"
+                      onclick="confirmDelete('del-user-{{ u.id }}', 'user')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                  {% else %}
+                  <span style="font-size:11px;color:var(--text-muted)">Protected</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

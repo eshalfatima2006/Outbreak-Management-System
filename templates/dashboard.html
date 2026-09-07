@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Dashboard -- PHIN Outbreak System{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}FR 2.4.10 -- Aggregate Surveillance Overview{% endblock %}
+
+{% block content %}
+<!-- -- Stat Cards -- -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="0">
+    <div class="stat-card teal">
+      <div class="stat-icon teal"><i class="fa-solid fa-briefcase-medical"></i></div>
+      <div class="stat-value" data-count="{{ total_cases }}">{{ total_cases }}</div>
+      <div class="stat-label">Total Cases</div>
+      <div class="mini-progress mt-2">
+        <div class="mini-progress-bar" style="width:{{ [total_cases*4,100]|min }}%; background:linear-gradient(90deg,#14B8A6,#38BDF8)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="80">
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fa-solid fa-biohazard"></i></div>
+      <div class="stat-value" data-count="{{ total_exposures }}">{{ total_exposures }}</div>
+      <div class="stat-label">Total Exposures</div>
+      <div class="mini-progress mt-2">
+        <div class="mini-progress-bar" style="width:{{ [total_exposures*4,100]|min }}%; background:linear-gradient(90deg,#3B82F6,#06B6D4)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="160">
+    <div class="stat-card purple">
+      <div class="stat-icon purple"><i class="fa-solid fa-diagram-project"></i></div>
+      <div class="stat-value">{{ avg_contacts }}</div>
+      <div class="stat-label">Avg Contacts / Case</div>
+      <div class="mini-progress mt-2">
+        <div class="mini-progress-bar" style="width:{{ [avg_contacts*10,100]|min }}%; background:linear-gradient(90deg,#8B5CF6,#A78BFA)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="240">
+    <div class="stat-card orange">
+      <div class="stat-icon orange"><i class="fa-solid fa-users"></i></div>
+      <div class="stat-value" data-count="{{ total_persons }}">{{ total_persons }}</div>
+      <div class="stat-label">Registered Persons</div>
+      <div class="mini-progress mt-2">
+        <div class="mini-progress-bar" style="width:{{ [total_persons*4,100]|min }}%; background:linear-gradient(90deg,#F59E0B,#EF4444)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- -- Middle Row -- -->
+<div class="row g-3 mb-4">
+  <!-- Priority Breakdown -->
+  <div class="col-lg-4" data-aos="fade-up" data-aos-delay="50">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-chart-pie me-2 text-teal"></i>Case Priority</h5>
+      </div>
+      <div class="card-body">
+        {% set total = high + medium + low %}
+        {% if total == 0 %}
+          <div class="empty-state" style="padding:30px 10px">
+            <i class="fa-solid fa-chart-pie" style="font-size:32px;color:#CBD5E1;display:block;margin-bottom:10px"></i>
+            <p class="text-muted" style="font-size:13px">No cases yet</p>
+          </div>
+        {% else %}
+          <div style="margin-bottom:16px">
+            {% for label, count, color, icon in [
+              ('High',   high,   '#EF4444', 'fa-arrow-up'),
+              ('Medium', medium, '#F59E0B', 'fa-minus'),
+              ('Low',    low,    '#10B981', 'fa-arrow-down')
+            ] %}
+            <div style="margin-bottom:14px">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">
+                  <i class="fa-solid {{ icon }} me-1" style="color:{{ color }}"></i>{{ label }}
+                </span>
+                <span style="font-size:13px;font-weight:700;color:{{ color }}">{{ count }}</span>
+              </div>
+              <div class="mini-progress">
+                <div class="mini-progress-bar" style="width:{{ ((count/total)*100)|round }}%;background:{{ color }}"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Breakdown -->
+  <div class="col-lg-4" data-aos="fade-up" data-aos-delay="120">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-stethoscope me-2 text-teal"></i>Case Status</h5>
+      </div>
+      <div class="card-body">
+        {% set stotal = confirmed + probable + suspect %}
+        {% if stotal == 0 %}
+          <div class="empty-state" style="padding:30px 10px">
+            <i class="fa-solid fa-stethoscope" style="font-size:32px;color:#CBD5E1;display:block;margin-bottom:10px"></i>
+            <p class="text-muted" style="font-size:13px">No cases yet</p>
+          </div>
+        {% else %}
+          {% for label, count, cls in [
+            ('Confirmed', confirmed, 'badge-confirmed'),
+            ('Probable',  probable,  'badge-probable'),
+            ('Suspect',   suspect,   'badge-suspect')
+          ] %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <span class="badge {{ cls }}">{{ label }}</span>
+            <div style="text-align:right">
+              <span style="font-size:18px;font-weight:700;color:var(--text)">{{ count }}</span>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:4px">
+                ({{ ((count/stotal)*100)|round(1) }}%)
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="col-lg-4" data-aos="fade-up" data-aos-delay="190">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-bolt me-2 text-teal"></i>Quick Actions</h5>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+        <a href="{{ url_for('create_person') }}" class="btn btn-secondary w-100" style="justify-content:flex-start">
+          <i class="fa-solid fa-user-plus"></i> Register New Person
+        </a>
+        <a href="{{ url_for('create_case') }}" class="btn btn-primary w-100" style="justify-content:flex-start">
+          <i class="fa-solid fa-plus"></i> Create New Case
+        </a>
+        <a href="{{ url_for('create_exposure') }}" class="btn btn-secondary w-100" style="justify-content:flex-start">
+          <i class="fa-solid fa-biohazard"></i> Log New Exposure
+        </a>
+        <a href="{{ url_for('links') }}" class="btn btn-secondary w-100" style="justify-content:flex-start">
+          <i class="fa-solid fa-link"></i> Link Case to Exposure
+        </a>
+        <a href="{{ url_for('export_data') }}" class="btn btn-secondary w-100" style="justify-content:flex-start">
+          <i class="fa-solid fa-file-export"></i> Export All Data
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- -- Recent Cases Table -- -->
+<div class="card" data-aos="fade-up" data-aos-delay="50">
+  <div class="card-header">
+    <h5><i class="fa-solid fa-clock-rotate-left me-2 text-teal"></i>Recent Cases</h5>
+    <a href="{{ url_for('cases') }}" class="btn btn-secondary btn-sm">View All</a>
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if recent_cases %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Patient</th>
+            <th>Diagnosis</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Onset Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in recent_cases %}
+          <tr>
+            <td><code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px">{{ c.case_id }}</code></td>
+            <td><strong>{{ c.person.name }}</strong></td>
+            <td>{{ c.diagnosis or '--' }}</td>
+            <td>
+              <span class="badge badge-{{ c.case_status|lower if c.case_status else 'gray' }}">
+                {{ c.case_status or 'Unknown' }}
+              </span>
+            </td>
+            <td>
+              {% if c.priority %}
+              <span class="priority-{{ c.priority|lower }}">{{ c.priority }}</span>
+              {% else %}--{% endif %}
+            </td>
+            <td>{{ c.onset_date.strftime('%b %d, %Y') if c.onset_date else '--' }}</td>
+            <td>
+              <a href="{{ url_for('edit_case', cid=c.id) }}" class="btn btn-secondary btn-sm btn-icon">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fa-solid fa-briefcase-medical"></i>
+      <h6>No cases recorded yet</h6>
+      <p>Start by <a href="{{ url_for('create_case') }}" class="text-teal">creating your first case</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}PHIN Outbreak System{% endblock %}</title>
+  <meta name="description" content="CDC PHIN-compliant Public Health Outbreak Management System for disease investigation and contact tracing." />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Animate.css & AOS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+  <!-- Bootstrap 5 (grid/utilities only, overridden by custom) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Flash messages as data attributes for JS toast conversion -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div data-flash-message="{{ message }}" data-flash-category="{{ category }}" style="display:none"></div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- -- Sidebar ----------------------------------------------- -->
+  <aside class="sidebar" id="sidebar">
+    <a href="{{ url_for('dashboard') }}" class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-shield-virus"></i></div>
+      <div class="brand-text">
+        <h6>OutbreakMS</h6>
+        <span>PHIN Compliant</span>
+      </div>
+    </a>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Overview</div>
+      <div class="nav-item">
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+          <i class="fa-solid fa-chart-bar"></i> Reports
+        </a>
+      </div>
+
+      <div class="sidebar-section-label">Case Management</div>
+      <div class="nav-item">
+        <a href="{{ url_for('persons') }}" class="nav-link {% if 'person' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-users"></i> Persons
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{{ url_for('cases') }}" class="nav-link {% if 'case' in request.endpoint and request.endpoint != 'contacts' %}active{% endif %}">
+          <i class="fa-solid fa-briefcase-medical"></i> Cases
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{{ url_for('exposures') }}" class="nav-link {% if 'exposure' in request.endpoint %}active{% endif %}">
+          <i class="fa-solid fa-biohazard"></i> Exposures
+        </a>
+      </div>
+
+      <div class="sidebar-section-label">Epi-Links</div>
+      <div class="nav-item">
+        <a href="{{ url_for('links') }}" class="nav-link {% if request.endpoint == 'links' %}active{% endif %}">
+          <i class="fa-solid fa-link"></i> Link Entities
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{{ url_for('contacts') }}" class="nav-link {% if request.endpoint == 'contacts' %}active{% endif %}">
+          <i class="fa-solid fa-diagram-project"></i> Contact Tracing
+        </a>
+      </div>
+
+      <div class="sidebar-section-label">Data</div>
+      <div class="nav-item">
+        <a href="{{ url_for('export_data') }}" class="nav-link">
+          <i class="fa-solid fa-file-export"></i> Export JSON
+        </a>
+      </div>
+      {% if current_user.is_admin() %}
+      <div class="nav-item">
+        <a href="{{ url_for('import_data') }}" class="nav-link {% if request.endpoint == 'import_data' %}active{% endif %}">
+          <i class="fa-solid fa-file-import"></i> Import JSON
+        </a>
+      </div>
+      <div class="sidebar-section-label">Admin</div>
+      <div class="nav-item">
+        <a href="{{ url_for('admin_settings') }}" class="nav-link {% if request.endpoint == 'admin_settings' %}active{% endif %}">
+          <i class="fa-solid fa-gear"></i> Admin Settings
+        </a>
+      </div>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ current_user.username[0]|upper }}</div>
+        <div class="user-details">
+          <div class="username">{{ current_user.username }}</div>
+          <div class="user-role">{{ current_user.role }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="btn-logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- -- Main Content ------------------------------------------- -->
+  <div class="main-content">
+    <!-- Top Navbar -->
+    <header class="top-navbar">
+      <div>
+        <button class="btn btn-secondary btn-sm btn-icon d-md-none me-2" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="page-title d-inline">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="page-subtitle">{% block page_subtitle %}{% endblock %}</div>
+      </div>
+      <div class="navbar-actions">
+        <span class="badge badge-teal" style="font-size:12px">
+          <i class="fa-solid fa-shield-halved me-1"></i> PHIN Compliant
+        </span>
+        <span class="badge badge-gray" style="font-size:11px">
+          <i class="fa-regular fa-clock me-1"></i>
+          <span id="live-time"></span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-wrapper">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // Live clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-time').textContent =
+        now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+    updateClock(); setInterval(updateClock, 1000);
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

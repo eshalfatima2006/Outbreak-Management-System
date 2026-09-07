@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Exposures -- PHIN{% endblock %}
+{% block page_title %}Exposures{% endblock %}
+{% block page_subtitle %}FR 2.2.4.3.a -- Exposure Event Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="breadcrumb">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Exposures</span>
+  </div>
+  <a href="{{ url_for('create_exposure') }}" class="btn btn-primary">
+    <i class="fa-solid fa-plus"></i> Log Exposure
+  </a>
+</div>
+
+<div class="card" data-aos="fade-up">
+  <div class="card-header">
+    <h5><i class="fa-solid fa-biohazard me-2 text-teal"></i>Exposure Events
+      <span class="badge badge-teal ms-2">{{ exposures|length }} records</span>
+    </h5>
+    <input type="text" id="exp-search" class="form-control" placeholder="Search exposures..." style="width:220px;padding:7px 12px;font-size:13px" />
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if exposures %}
+    <div class="table-responsive">
+      <table class="data-table" id="exp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Place of Exposure</th>
+            <th>Duration</th>
+            <th>Frequency</th>
+            <th>Proximity</th>
+            <th>Linked Person</th>
+            <th>Cases Linked</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in exposures %}
+          <tr>
+            <td style="color:var(--text-muted);font-size:12px">{{ e.id }}</td>
+            <td>
+              {% set type_colors = {
+                'Intimate': '#EF4444',
+                'Social': '#3B82F6',
+                'Household': '#8B5CF6',
+                'Common Conveyance': '#F59E0B'
+              } %}
+              <span class="badge" style="background:rgba(20,184,166,.12);color:#0D9488">
+                {{ e.exposure_type or '--' }}
+              </span>
+            </td>
+            <td>{{ e.place or '--' }}</td>
+            <td>{{ e.duration or '--' }}</td>
+            <td>{{ e.frequency or '--' }}</td>
+            <td style="font-size:12px">{{ e.proximity or '--' }}</td>
+            <td>
+              {% if e.person %}
+              <span style="font-size:12px;font-weight:600">{{ e.person.name }}</span>
+              {% else %}<span style="color:var(--text-muted)">--</span>{% endif %}
+            </td>
+            <td>
+              <span class="badge {% if e.links|length > 0 %}badge-teal{% else %}badge-gray{% endif %}">
+                {{ e.links|length }}
+              </span>
+            </td>
+            <td style="text-align:right">
+              <div style="display:flex;gap:6px;justify-content:flex-end">
+                <a href="{{ url_for('edit_exposure', eid=e.id) }}" class="btn btn-secondary btn-sm btn-icon">
+                  <i class="fa-solid fa-pen"></i>
+                </a>
+                <form id="del-exp-{{ e.id }}" method="POST" action="{{ url_for('delete_exposure', eid=e.id) }}" style="display:inline">
+                  <button type="button" class="btn btn-danger btn-sm btn-icon"
+                    onclick="confirmDelete('del-exp-{{ e.id }}', 'exposure')">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fa-solid fa-biohazard"></i>
+      <h6>No exposure events logged</h6>
+      <p><a href="{{ url_for('create_exposure') }}" class="text-teal">Log the first exposure event</a>.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+  document.getElementById('exp-search').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#exp-table tbody tr').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}

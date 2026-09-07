@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} -- PHIN{% endblock %}
+{% block page_title %}Error {{ code }}{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+  <div style="text-align:center" data-aos="fade-up">
+    <div style="font-size:80px;font-weight:900;color:var(--border);line-height:1;margin-bottom:8px">{{ code }}</div>
+    <i class="fa-solid fa-{% if code == 403 %}ban{% else %}ghost{% endif %}"
+       style="font-size:52px;color:var(--teal);margin-bottom:20px;display:block"></i>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">{{ message }}</h2>
+    <p style="color:var(--text-muted);margin-bottom:28px">
+      {% if code == 403 %}You do not have permission to access this resource. Admin role required.
+      {% else %}The page you are looking for does not exist.{% endif %}
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+      <i class="fa-solid fa-house"></i> Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
