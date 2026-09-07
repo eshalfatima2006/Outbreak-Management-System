@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Link Entities -- PHIN{% endblock %}
+{% block page_title %}Link Entities{% endblock %}
+{% block page_subtitle %}FR 2.3.2.1 -- Dynamic Case-Exposure Linking{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-4">
+  <a href="{{ url_for('dashboard') }}">Dashboard</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>Link Entities</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Link Form -->
+  <div class="col-lg-5" data-aos="fade-up">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-link me-2 text-teal"></i>Create Epi-Link</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="form-group">
+            <label class="form-label" for="link-case">
+              <i class="fa-solid fa-briefcase-medical me-1"></i> Select Case <span style="color:var(--danger)">*</span>
+            </label>
+            <select id="link-case" name="case_id" class="form-select" required>
+              <option value="">-- Choose a Case --</option>
+              {% for c in cases %}
+              <option value="{{ c.id }}">{{ c.case_id }} -- {{ c.person.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="text-align:center;margin:12px 0;color:var(--text-muted)">
+            <i class="fa-solid fa-arrow-down" style="font-size:18px;color:var(--teal)"></i>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="link-exp">
+              <i class="fa-solid fa-biohazard me-1"></i> Select Exposure <span style="color:var(--danger)">*</span>
+            </label>
+            <select id="link-exp" name="exposure_id" class="form-select" required>
+              <option value="">-- Choose an Exposure --</option>
+              {% for e in exposures %}
+              <option value="{{ e.id }}">#{{ e.id }} -- {{ e.exposure_type }} @ {{ e.place or 'Unknown' }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mt-2">
+            <i class="fa-solid fa-link"></i> Create Link
+          </button>
+        </form>
+
+        <div style="margin-top:16px;padding:12px;background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:8px">
+          <p style="font-size:11px;color:var(--text-muted);margin:0;line-height:1.6">
+            <i class="fa-solid fa-circle-info me-1 text-teal"></i>
+            <strong>Many-to-Many:</strong> One case can be linked to multiple exposures,
+            and one exposure can be linked to many cases.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Existing Links -->
+  <div class="col-lg-7" data-aos="fade-up" data-aos-delay="100">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-diagram-project me-2 text-teal"></i>Existing Epi-Links
+          <span class="badge badge-teal ms-2">{{ links|length }}</span>
+        </h5>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% if links %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Patient</th>
+                <th>Exposure</th>
+                <th>Type</th>
+                <th style="text-align:right">Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lnk, c, e in links %}
+              <tr>
+                <td><code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px">{{ c.case_id }}</code></td>
+                <td style="font-weight:600;font-size:13px">{{ c.person.name }}</td>
+                <td style="font-size:12px">#{{ e.id }} -- {{ e.place or 'Unknown' }}</td>
+                <td><span class="badge badge-teal">{{ e.exposure_type or '--' }}</span></td>
+                <td style="text-align:right">
+                  <form id="del-link-{{ lnk.id }}" method="POST" action="{{ url_for('delete_link', lid=lnk.id) }}" style="display:inline">
+                    <button type="button" class="btn btn-danger btn-sm btn-icon"
+                      onclick="confirmDelete('del-link-{{ lnk.id }}', 'link')">
+                      <i class="fa-solid fa-unlink"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-link"></i>
+          <h6>No epi-links yet</h6>
+          <p>Use the form to link cases to exposures.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

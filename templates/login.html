@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHIN Outbreak System -- Login</title>
+  <meta name="description" content="Secure login for the PHIN Outbreak Management System." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div data-flash-message="{{ message }}" data-flash-category="{{ category }}" style="display:none"></div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="login-page">
+    <!-- Floating particles -->
+    <div class="login-particles">
+      {% for i in range(18) %}
+      <div class="particle" style="
+        left: {{ [5,12,20,28,35,42,50,58,65,72,80,88,92,15,30,55,70,85][loop.index0] }}%;
+        top:  {{ [10,70,30,85,50,20,60,40,90,15,75,35,55,25,80,45,65,5][loop.index0] }}%;
+        animation-delay: {{ loop.index0 * 0.35 }}s;
+        animation-duration: {{ 5 + (loop.index0 % 4) }}s;
+        width: {{ 2 + (loop.index0 % 3) }}px;
+        height: {{ 2 + (loop.index0 % 3) }}px;
+      "></div>
+      {% endfor %}
+    </div>
+
+    <div class="login-card animate__animated animate__fadeInUp">
+      <!-- Logo -->
+      <div class="login-logo"><i class="fa-solid fa-shield-virus"></i></div>
+      <h1 class="login-title">OutbreakMS</h1>
+      <p class="login-subtitle">PHIN-Compliant Disease Surveillance Platform</p>
+
+      <!-- Flash Alerts (fallback inline display) -->
+      <div id="inline-alerts"></div>
+
+      <!-- Login Form -->
+      <form method="POST" action="{{ url_for('login') }}" class="login-form" id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="username">
+            <i class="fa-solid fa-user me-1"></i> Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            placeholder="Enter your username"
+            required autocomplete="username"
+            value="{{ request.form.get('username', '') }}"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            <i class="fa-solid fa-lock me-1"></i> Password
+          </label>
+          <div style="position:relative">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="Enter your password"
+              required autocomplete="current-password"
+              style="padding-right: 42px"
+            />
+            <button type="button" onclick="togglePwd()" style="
+              position:absolute; right:12px; top:50%; transform:translateY(-50%);
+              background:none; border:none; color:rgba(255,255,255,.4); cursor:pointer; font-size:14px;
+            " id="pwd-eye"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:rgba(255,255,255,.55); font-size:13px">
+            <input type="checkbox" name="remember" style="accent-color: #14B8A6" /> Remember me
+          </label>
+        </div>
+
+        <button type="submit" class="login-btn" id="login-submit">
+          <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In Securely
+        </button>
+      </form>
+
+      <!-- Credentials hint -->
+      <div style="margin-top:28px; padding:14px; background:rgba(20,184,166,.08); border:1px solid rgba(20,184,166,.2); border-radius:10px;">
+        <p style="font-size:11px; color:rgba(255,255,255,.45); margin:0; text-align:center; line-height:1.6">
+          <i class="fa-solid fa-circle-info me-1" style="color:#38BDF8"></i>
+          <strong style="color:rgba(255,255,255,.6)">Admin:</strong> admin / admin123 &nbsp;|&nbsp;
+          <strong style="color:rgba(255,255,255,.6)">Investigator:</strong> investigator / invest123
+        </p>
+      </div>
+
+      <p style="text-align:center; margin-top:20px; font-size:11px; color:rgba(255,255,255,.25);">
+        <i class="fa-solid fa-shield-halved me-1"></i> CDC PHIN NFR 2.8 -- Role-Based Access Control
+      </p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    function togglePwd() {
+      const inp = document.getElementById('password');
+      const btn = document.getElementById('pwd-eye').querySelector('i');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.className = 'fa-solid fa-eye-slash';
+      } else {
+        inp.type = 'password';
+        btn.className = 'fa-solid fa-eye';
+      }
+    }
+    document.getElementById('login-form').addEventListener('submit', function() {
+      const btn = document.getElementById('login-submit');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Signing In...';
+      btn.disabled = true;
+    });
+  </script>
+</body>
+</html>

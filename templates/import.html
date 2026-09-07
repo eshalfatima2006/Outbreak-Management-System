@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Import Data -- PHIN{% endblock %}
+{% block page_title %}Import Data{% endblock %}
+{% block page_subtitle %}NFR 2.8 -- Database Restore from JSON{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-4">
+  <a href="{{ url_for('dashboard') }}">Dashboard</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>Import JSON</span>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7" data-aos="fade-up">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-file-import me-2 text-teal"></i>Import from JSON Backup</h5>
+      </div>
+      <div class="card-body">
+        <div style="padding:16px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;margin-bottom:24px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);font-size:20px;flex-shrink:0;margin-top:2px"></i>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#991B1B;margin-bottom:4px">Destructive Action -- Admin Only</div>
+              <p style="font-size:13px;color:#7F1D1D;margin:0;line-height:1.6">
+                Importing a JSON backup will <strong>permanently delete</strong> all existing Persons, Cases, Exposures,
+                and Links before restoring from the file. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="import-form">
+          <div class="form-group">
+            <label class="form-label" for="import_file">
+              <i class="fa-solid fa-file-code me-1"></i> Select JSON Export File
+            </label>
+            <div style="border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;transition:all var(--transition);cursor:pointer"
+              id="drop-zone" ondragover="event.preventDefault();this.style.borderColor='var(--teal)'"
+              ondragleave="this.style.borderColor='var(--border)'"
+              ondrop="handleDrop(event)">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:36px;color:#CBD5E1;margin-bottom:12px;display:block"></i>
+              <p style="font-size:14px;color:var(--text-muted);margin-bottom:8px">Drag &amp; drop your JSON file here, or</p>
+              <label for="import_file" class="btn btn-secondary btn-sm" style="cursor:pointer">
+                <i class="fa-solid fa-folder-open"></i> Browse Files
+              </label>
+              <input type="file" id="import_file" name="import_file" accept=".json" style="display:none" onchange="showFile(this)" required />
+              <div id="file-name" style="margin-top:12px;font-size:12px;color:var(--text-muted)"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger" id="import-btn"
+              onclick="return confirm('WARNING: This will delete ALL existing data. Are you absolutely sure?')">
+              <i class="fa-solid fa-file-import"></i> Import &amp; Overwrite
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Export hint -->
+    <div class="card mt-4" style="border-left:4px solid var(--teal)">
+      <div class="card-body" style="padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <i class="fa-solid fa-circle-info" style="color:var(--teal);font-size:20px"></i>
+          <div>
+            <div style="font-weight:600;font-size:13px">Need a backup first?</div>
+            <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">
+              <a href="{{ url_for('export_data') }}" class="text-teal">Click here to export current data</a>
+              before importing a different file.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function showFile(input) {
+    const fn = input.files[0] ? input.files[0].name : '';
+    document.getElementById('file-name').innerHTML = fn
+      ? `<i class="fa-solid fa-file-code" style="color:var(--teal)"></i> <strong>${fn}</strong> selected`
+      : '';
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    const dt = e.dataTransfer;
+    if (dt.files.length) {
+      document.getElementById('import_file').files = dt.files;
+      showFile(document.getElementById('import_file'));
+    }
+    document.getElementById('drop-zone').style.borderColor = 'var(--border)';
+  }
+</script>
+{% endblock %}

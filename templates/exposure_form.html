@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if exposure else "Create" }} Exposure -- PHIN{% endblock %}
+{% block page_title %}{{ "Edit" if exposure else "Log" }} Exposure{% endblock %}
+{% block page_subtitle %}FR 2.2.4.3.a -- Exposure Event Details{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <div class="breadcrumb">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{{ url_for('exposures') }}">Exposures</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ "Edit" if exposure else "New" }}</span>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-xl-7 col-lg-9" data-aos="fade-up">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-biohazard me-2 text-teal"></i>
+          {{ "Update Exposure #" + exposure.id|string if exposure else "Log New Exposure Event" }}
+        </h5>
+        <a href="{{ url_for('exposures') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+      </div>
+      <div class="card-body">
+        {% set fd = exposure if exposure else form_data %}
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="exposure_type">
+                  <i class="fa-solid fa-person-dots-from-line me-1"></i> Exposure Type <span style="color:var(--danger)">*</span>
+                </label>
+                <select id="exposure_type" name="exposure_type" class="form-select" required>
+                  <option value="">-- Select Type --</option>
+                  {% for t in ['Intimate','Social','Household','Common Conveyance'] %}
+                  <option value="{{ t }}" {{ 'selected' if fd and fd.exposure_type == t else '' }}>{{ t }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="person_id">
+                  <i class="fa-solid fa-user me-1"></i> Linked Person (Optional)
+                </label>
+                <select id="person_id" name="person_id" class="form-select">
+                  <option value="">-- None --</option>
+                  {% for p in persons %}
+                  <option value="{{ p.id }}" {{ 'selected' if fd and fd.person_id == p.id else '' }}>
+                    {{ p.name }} ({{ p.subject_id }})
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-group">
+                <label class="form-label" for="place">
+                  <i class="fa-solid fa-location-dot me-1"></i> Place of Exposure
+                </label>
+                <input type="text" id="place" name="place" class="form-control"
+                  value="{{ fd.place if fd else '' }}" placeholder="e.g. Main St Grocery, Chicago IL" />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="duration">
+                  <i class="fa-solid fa-hourglass me-1"></i> Duration
+                </label>
+                <input type="text" id="duration" name="duration" class="form-control"
+                  value="{{ fd.duration if fd else '' }}" placeholder="e.g. 2 hours, 30 minutes" />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label" for="frequency">
+                  <i class="fa-solid fa-repeat me-1"></i> Frequency
+                </label>
+                <input type="text" id="frequency" name="frequency" class="form-control"
+                  value="{{ fd.frequency if fd else '' }}" placeholder="e.g. Daily, One-time" />
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-group">
+                <label class="form-label" for="proximity">
+                  <i class="fa-solid fa-ruler me-1"></i> Proximity to Source
+                </label>
+                <input type="text" id="proximity" name="proximity" class="form-control"
+                  value="{{ fd.proximity if fd else '' }}" placeholder="e.g. Within 6 feet, Direct contact" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="{{ url_for('exposures') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-{{ 'floppy-disk' if exposure else 'plus' }}"></i>
+              {{ "Update Exposure" if exposure else "Log Exposure" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

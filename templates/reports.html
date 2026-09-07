@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Reports -- PHIN{% endblock %}
+{% block page_title %}Detailed Reports{% endblock %}
+{% block page_subtitle %}FR 2.4.4 -- Epidemiological Investigation Summary{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-4">
+  <a href="{{ url_for('dashboard') }}">Dashboard</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>Reports</span>
+</div>
+
+<!-- Summary Stat Strip -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4" data-aos="fade-up">
+    <div class="stat-card teal">
+      <div class="stat-icon teal"><i class="fa-solid fa-file-lines"></i></div>
+      <div class="stat-value">{{ total_cases }}</div>
+      <div class="stat-label">Total Cases in Report</div>
+    </div>
+  </div>
+  <div class="col-md-4" data-aos="fade-up" data-aos-delay="80">
+    <div class="stat-card orange">
+      <div class="stat-icon orange"><i class="fa-solid fa-circle-exclamation"></i></div>
+      <div class="stat-value">{{ no_epi_link_count }}</div>
+      <div class="stat-label">Cases with No Epi-Link</div>
+    </div>
+  </div>
+  <div class="col-md-4" data-aos="fade-up" data-aos-delay="160">
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fa-solid fa-link"></i></div>
+      <div class="stat-value">{{ total_cases - no_epi_link_count }}</div>
+      <div class="stat-label">Cases with Epi-Links</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Report Table -->
+<div class="card" data-aos="fade-up" data-aos-delay="50">
+  <div class="card-header">
+    <h5><i class="fa-solid fa-table-list me-2 text-teal"></i>Case Investigation Report
+      <span class="badge badge-teal ms-2">{{ total_cases }} cases</span>
+    </h5>
+    <button onclick="window.print()" class="btn btn-secondary btn-sm">
+      <i class="fa-solid fa-print"></i> Print Report
+    </button>
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if report_rows %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Patient</th>
+            <th>Diagnosis</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Contact Count</th>
+            <th>Epi-Link</th>
+            <th>Lab Results</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report_rows %}
+          <tr>
+            <td>
+              <code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px">
+                {{ row.case.case_id }}
+              </code>
+            </td>
+            <td>
+              <div style="font-weight:600">{{ row.case.person.name }}</div>
+              <div style="font-size:11px;color:var(--text-muted)">{{ row.case.person.subject_id }}</div>
+            </td>
+            <td style="font-size:13px">{{ row.case.diagnosis or '--' }}</td>
+            <td>
+              <span class="badge badge-{{ row.case.case_status|lower if row.case.case_status else 'gray' }}">
+                {{ row.case.case_status or '--' }}
+              </span>
+            </td>
+            <td>
+              {% if row.case.priority %}
+              <span class="priority-{{ row.case.priority|lower }}">{{ row.case.priority }}</span>
+              {% else %}--{% endif %}
+            </td>
+            <td style="text-align:center">
+              <span style="font-size:18px;font-weight:700;color:{% if row.contact_count > 0 %}var(--teal){% else %}var(--text-muted){% endif %}">
+                {{ row.contact_count }}
+              </span>
+            </td>
+            <td>
+              {% if row.has_epi_link %}
+              <span class="badge badge-confirmed">
+                <i class="fa-solid fa-check me-1"></i> Linked
+              </span>
+              {% else %}
+              <span class="badge badge-high">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> No Link
+              </span>
+              {% endif %}
+            </td>
+            <td style="font-size:11px;color:var(--text-muted);max-width:180px">
+              <i class="fa-solid fa-flask me-1 text-teal"></i>{{ row.lab_results }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fa-solid fa-chart-bar"></i>
+      <h6>No cases to report</h6>
+      <p>Create cases to generate investigation reports.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="card mt-4" data-aos="fade-up">
+  <div class="card-body" style="padding:16px 24px">
+    <div style="font-size:11px;color:var(--text-muted);display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+      <span><strong style="color:var(--text)">FR 2.4.4</strong> -- Detailed Epi Report</span>
+      <span><i class="fa-solid fa-circle-exclamation me-1" style="color:#EF4444"></i>No-Epi-Link = cases requiring investigation</span>
+      <span><i class="fa-solid fa-flask me-1" style="color:var(--teal)"></i>Lab Results = placeholder pending integration</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
