@@ -355,11 +355,20 @@ def delete_link(lid):
 @login_required
 def contacts():
     all_cases = Case.query.order_by(Case.case_id).all()
-    sid = request.args.get("case_id", type=int); linked = []; case_obj = None
+    all_exposures = Exposure.query.order_by(Exposure.id.desc()).all()
+    sid = request.args.get("case_id", type=int)
+    eid = request.args.get("exposure_id", type=int)
+    linked_exposures = []
+    case_obj = None
+    linked_cases = []
+    exposure_obj = None
     if sid:
         case_obj = Case.query.get_or_404(sid)
-        linked = db.session.query(Exposure).join(Link, Link.exposure_id==Exposure.id).filter(Link.case_id==sid).all()
-    return render_template("contacts.html", all_cases=all_cases, selected_case=case_obj, linked_exposures=linked, selected_case_id=sid)
+        linked_exposures = db.session.query(Exposure).join(Link, Link.exposure_id==Exposure.id).filter(Link.case_id==sid).all()
+    elif eid:
+        exposure_obj = Exposure.query.get_or_404(eid)
+        linked_cases = db.session.query(Case).join(Link, Link.case_id==Case.id).filter(Link.exposure_id==eid).all()
+    return render_template("contacts.html", all_cases=all_cases, selected_case=case_obj, linked_exposures=linked_exposures, selected_case_id=sid, all_exposures=all_exposures, selected_exposure=exposure_obj, linked_cases=linked_cases, selected_exposure_id=eid)
 
 @app.route("/reports")
 @login_required

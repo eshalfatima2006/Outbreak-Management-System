@@ -1,148 +1,313 @@
 {% extends "base.html" %}
 {% block title %}Contact Tracing -- PHIN{% endblock %}
 {% block page_title %}Contact Tracing{% endblock %}
-{% block page_subtitle %}FR 2.3.3.4 -- Exposure Contacts per Case{% endblock %}
+{% block page_subtitle %}Exposure Contacts per Case{% endblock %}
 
 {% block content %}
+<style>
+  #tracingTabs .nav-link {
+    color: var(--text-muted) !important;
+    background: transparent !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    font-weight: 600;
+  }
+  #tracingTabs .nav-link:hover {
+    color: var(--navy) !important;
+    border-bottom: 2px solid var(--border) !important;
+  }
+  #tracingTabs .nav-link.active {
+    color: var(--teal-dark) !important;
+    border-bottom: 2px solid var(--teal) !important;
+    background: transparent !important;
+  }
+</style>
 <div class="breadcrumb mb-4">
   <a href="{{ url_for('dashboard') }}">Dashboard</a>
   <span class="breadcrumb-sep">/</span>
   <span>Contact Tracing</span>
 </div>
 
-<!-- Case Selector -->
-<div class="card mb-4" data-aos="fade-up">
-  <div class="card-header">
-    <h5><i class="fa-solid fa-magnifying-glass me-2 text-teal"></i>Select Case to Trace</h5>
-  </div>
-  <div class="card-body">
-    <form method="GET" style="display:flex;gap:12px;align-items:flex-end">
-      <div style="flex:1">
-        <label class="form-label" for="case_id"><i class="fa-solid fa-briefcase-medical me-1"></i> Case</label>
-        <select name="case_id" id="case_id" class="form-select">
-          <option value="">-- Select a case to view contacts --</option>
-          {% for c in all_cases %}
-          <option value="{{ c.id }}" {{ 'selected' if selected_case_id == c.id else '' }}>
-            {{ c.case_id }} -- {{ c.person.name }} ({{ c.case_status or 'Unknown' }})
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">
-        <i class="fa-solid fa-search"></i> Trace Contacts
-      </button>
-      {% if selected_case_id %}
-      <a href="{{ url_for('contacts') }}" class="btn btn-secondary">
-        <i class="fa-solid fa-xmark"></i> Clear
-      </a>
-      {% endif %}
-    </form>
-  </div>
-</div>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs mb-4" id="tracingTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if not selected_exposure_id %}active{% endif %}" id="case-tab" data-bs-toggle="tab" data-bs-target="#case-view" type="button" role="tab">Case &rarr; Exposures</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if selected_exposure_id %}active{% endif %}" id="exp-tab" data-bs-toggle="tab" data-bs-target="#exp-view" type="button" role="tab">Exposure &rarr; Cases</button>
+  </li>
+</ul>
 
-{% if selected_case %}
-<!-- Case Info Banner -->
-<div class="card mb-4" style="border-left: 4px solid var(--teal)" data-aos="fade-up">
-  <div class="card-body" style="padding:18px 24px">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--teal),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px">
-            <i class="fa-solid fa-briefcase-medical"></i>
+<div class="tab-content" id="tracingTabsContent">
+  <!-- Case -> Exposures Tab -->
+  <div class="tab-pane fade {% if not selected_exposure_id %}show active{% endif %}" id="case-view" role="tabpanel">
+    
+    <!-- Case Selector -->
+    <div class="card mb-4" data-aos="fade-up">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-magnifying-glass me-2 text-teal"></i>Select Case to Trace</h5>
+      </div>
+      <div class="card-body">
+        <form method="GET" style="display:flex;gap:12px;align-items:flex-end">
+          <div style="flex:1">
+            <label class="form-label" for="case_id"><i class="fa-solid fa-briefcase-medical me-1"></i> Case</label>
+            <select name="case_id" id="case_id" class="form-select">
+              <option value="">-- Select a case to view contacts --</option>
+              {% for c in all_cases %}
+              <option value="{{ c.id }}" {{ 'selected' if selected_case_id == c.id else '' }}>
+                {{ c.case_id }} -- {{ c.person.name }} ({{ c.case_status or 'Unknown' }})
+              </option>
+              {% endfor %}
+            </select>
           </div>
-          <div>
-            <code style="font-size:13px;background:#F1F5F9;padding:3px 8px;border-radius:5px">{{ selected_case.case_id }}</code>
-            <div style="font-size:16px;font-weight:700;margin-top:2px">{{ selected_case.person.name }}</div>
-            <div style="font-size:12px;color:var(--text-muted)">{{ selected_case.diagnosis or 'No diagnosis' }}</div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-search"></i> Trace Contacts
+          </button>
+          {% if selected_case_id %}
+          <a href="{{ url_for('contacts') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    {% if selected_case %}
+    <!-- Case Info Banner -->
+    <div class="card mb-4" style="border-left: 4px solid var(--teal)" data-aos="fade-up">
+      <div class="card-body" style="padding:18px 24px">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--teal),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px">
+                <i class="fa-solid fa-briefcase-medical"></i>
+              </div>
+              <div>
+                <code style="font-size:13px;background:#F1F5F9;padding:3px 8px;border-radius:5px">{{ selected_case.case_id }}</code>
+                <div style="font-size:16px;font-weight:700;margin-top:2px">{{ selected_case.person.name }}</div>
+                <div style="font-size:12px;color:var(--text-muted)">{{ selected_case.diagnosis or 'No diagnosis' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <span class="badge badge-{{ selected_case.case_status|lower if selected_case.case_status else 'gray' }} me-2">
+              {{ selected_case.case_status or '--' }}
+            </span>
+            {% if selected_case.priority %}
+            <span class="priority-{{ selected_case.priority|lower }}">{{ selected_case.priority }}</span>
+            {% endif %}
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+              <i class="fa-solid fa-diagram-project me-1"></i>
+              {{ linked_exposures|length }} contact(s) linked
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-4 text-md-end mt-2 mt-md-0">
-        <span class="badge badge-{{ selected_case.case_status|lower if selected_case.case_status else 'gray' }} me-2">
-          {{ selected_case.case_status or '--' }}
-        </span>
-        {% if selected_case.priority %}
-        <span class="priority-{{ selected_case.priority|lower }}">{{ selected_case.priority }}</span>
+    </div>
+
+    <!-- Linked Exposures -->
+    <div class="card" data-aos="fade-up" data-aos-delay="100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-biohazard me-2 text-teal"></i>
+          Linked Exposures for {{ selected_case.case_id }}
+          <span class="badge badge-teal ms-2">{{ linked_exposures|length }}</span>
+        </h5>
+        <a href="{{ url_for('links') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-link"></i> Manage Links
+        </a>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% if linked_exposures %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Exp #</th>
+                <th>Type</th>
+                <th>Place</th>
+                <th>Duration</th>
+                <th>Frequency</th>
+                <th>Proximity</th>
+                <th>Exposed Person</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in linked_exposures %}
+              <tr>
+                <td style="color:var(--text-muted);font-size:12px">#{{ e.id }}</td>
+                <td><span class="badge badge-teal">{{ e.exposure_type or '--' }}</span></td>
+                <td style="font-weight:500">{{ e.place or '--' }}</td>
+                <td>{{ e.duration or '--' }}</td>
+                <td>{{ e.frequency or '--' }}</td>
+                <td style="font-size:12px">{{ e.proximity or '--' }}</td>
+                <td>
+                  {% if e.person %}
+                  <div style="font-weight:600;font-size:13px">{{ e.person.name }}</div>
+                  <div style="font-size:11px;color:var(--text-muted)">{{ e.person.subject_id }}</div>
+                  {% else %}
+                  <span style="color:var(--text-muted)">Unknown</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-diagram-project"></i>
+          <h6>No exposures linked to this case</h6>
+          <p>
+            <a href="{{ url_for('links') }}" class="text-teal">Go to Link Entities</a>
+            to connect exposures to this case.
+          </p>
+        </div>
         {% endif %}
-        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
-          <i class="fa-solid fa-diagram-project me-1"></i>
-          {{ linked_exposures|length }} contact(s) linked
-        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Linked Exposures -->
-<div class="card" data-aos="fade-up" data-aos-delay="100">
-  <div class="card-header">
-    <h5><i class="fa-solid fa-biohazard me-2 text-teal"></i>
-      Linked Exposures for {{ selected_case.case_id }}
-      <span class="badge badge-teal ms-2">{{ linked_exposures|length }}</span>
-    </h5>
-    <a href="{{ url_for('links') }}" class="btn btn-secondary btn-sm">
-      <i class="fa-solid fa-link"></i> Manage Links
-    </a>
-  </div>
-  <div class="card-body" style="padding:0">
-    {% if linked_exposures %}
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Exp #</th>
-            <th>Type</th>
-            <th>Place</th>
-            <th>Duration</th>
-            <th>Frequency</th>
-            <th>Proximity</th>
-            <th>Exposed Person</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for e in linked_exposures %}
-          <tr>
-            <td style="color:var(--text-muted);font-size:12px">#{{ e.id }}</td>
-            <td><span class="badge badge-teal">{{ e.exposure_type or '--' }}</span></td>
-            <td style="font-weight:500">{{ e.place or '--' }}</td>
-            <td>{{ e.duration or '--' }}</td>
-            <td>{{ e.frequency or '--' }}</td>
-            <td style="font-size:12px">{{ e.proximity or '--' }}</td>
-            <td>
-              {% if e.person %}
-              <div style="font-weight:600;font-size:13px">{{ e.person.name }}</div>
-              <div style="font-size:11px;color:var(--text-muted)">{{ e.person.subject_id }}</div>
-              {% else %}
-              <span style="color:var(--text-muted)">Unknown</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {% elif selected_case_id %}
+    <div class="alert alert-danger"><i class="fa-solid fa-circle-xmark me-2"></i>Case not found.</div>
     {% else %}
-    <div class="empty-state">
-      <i class="fa-solid fa-diagram-project"></i>
-      <h6>No exposures linked to this case</h6>
-      <p>
-        <a href="{{ url_for('links') }}" class="text-teal">Go to Link Entities</a>
-        to connect exposures to this case.
-      </p>
+    <div class="card" data-aos="fade-up">
+      <div class="empty-state">
+        <i class="fa-solid fa-diagram-project" style="color:#CBD5E1"></i>
+        <h6>Select a case above</h6>
+        <p>Choose a case from the dropdown to view its linked exposures and contacts.</p>
+      </div>
     </div>
     {% endif %}
-  </div>
-</div>
 
-{% elif selected_case_id %}
-<div class="alert alert-danger"><i class="fa-solid fa-circle-xmark me-2"></i>Case not found.</div>
-{% else %}
-<div class="card" data-aos="fade-up">
-  <div class="empty-state">
-    <i class="fa-solid fa-diagram-project" style="color:#CBD5E1"></i>
-    <h6>Select a case above</h6>
-    <p>Choose a case from the dropdown to view its linked exposures and contacts.</p>
+  </div>
+  
+  <!-- Exposure -> Cases Tab -->
+  <div class="tab-pane fade {% if selected_exposure_id %}show active{% endif %}" id="exp-view" role="tabpanel">
+    
+    <!-- Exposure Selector -->
+    <div class="card mb-4" data-aos="fade-up">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-magnifying-glass me-2 text-teal"></i>Select Exposure to Trace</h5>
+      </div>
+      <div class="card-body">
+        <form method="GET" style="display:flex;gap:12px;align-items:flex-end">
+          <div style="flex:1">
+            <label class="form-label" for="exposure_id"><i class="fa-solid fa-biohazard me-1"></i> Exposure</label>
+            <select name="exposure_id" id="exposure_id" class="form-select">
+              <option value="">-- Select an exposure to view linked cases --</option>
+              {% for e in all_exposures %}
+              <option value="{{ e.id }}" {{ 'selected' if selected_exposure_id == e.id else '' }}>
+                #{{ e.id }} -- {{ e.exposure_type }} at {{ e.place }} 
+                {% if e.person %}({{ e.person.name }}){% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-search"></i> Trace Cases
+          </button>
+          {% if selected_exposure_id %}
+          <a href="{{ url_for('contacts') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    {% if selected_exposure %}
+    <!-- Exposure Info Banner -->
+    <div class="card mb-4" style="border-left: 4px solid #F59E0B" data-aos="fade-up">
+      <div class="card-body" style="padding:18px 24px">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px">
+                <i class="fa-solid fa-biohazard"></i>
+              </div>
+              <div>
+                <code style="font-size:13px;background:#F1F5F9;padding:3px 8px;border-radius:5px">#{{ selected_exposure.id }}</code>
+                <div style="font-size:16px;font-weight:700;margin-top:2px">{{ selected_exposure.exposure_type }}</div>
+                <div style="font-size:12px;color:var(--text-muted)">{{ selected_exposure.place or 'No place specified' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+              <i class="fa-solid fa-diagram-project me-1"></i>
+              {{ linked_cases|length }} case(s) linked
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linked Cases -->
+    <div class="card" data-aos="fade-up" data-aos-delay="100">
+      <div class="card-header">
+        <h5><i class="fa-solid fa-briefcase-medical me-2 text-teal"></i>
+          Linked Cases for Exposure #{{ selected_exposure.id }}
+          <span class="badge badge-teal ms-2">{{ linked_cases|length }}</span>
+        </h5>
+        <a href="{{ url_for('links') }}" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-link"></i> Manage Links
+        </a>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% if linked_cases %}
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Patient Name</th>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Onset Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in linked_cases %}
+              <tr>
+                <td style="color:var(--text-muted);font-size:12px"><code>{{ c.case_id }}</code></td>
+                <td>
+                  <div style="font-weight:600;font-size:13px">{{ c.person.name }}</div>
+                </td>
+                <td style="font-weight:500">{{ c.agent or '--' }}</td>
+                <td><span class="badge badge-{{ c.case_status|lower if c.case_status else 'gray' }}">{{ c.case_status or '--' }}</span></td>
+                <td>{% if c.priority %}<span class="priority-{{ c.priority|lower }}">{{ c.priority }}</span>{% else %}--{% endif %}</td>
+                <td style="font-size:12px">{{ c.onset_date or '--' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-diagram-project"></i>
+          <h6>No cases linked to this exposure</h6>
+          <p>
+            <a href="{{ url_for('links') }}" class="text-teal">Go to Link Entities</a>
+            to connect cases to this exposure.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% elif selected_exposure_id %}
+    <div class="alert alert-danger"><i class="fa-solid fa-circle-xmark me-2"></i>Exposure not found.</div>
+    {% else %}
+    <div class="card" data-aos="fade-up">
+      <div class="empty-state">
+        <i class="fa-solid fa-diagram-project" style="color:#CBD5E1"></i>
+        <h6>Select an exposure above</h6>
+        <p>Choose an exposure from the dropdown to view its linked cases.</p>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 </div>
-{% endif %}
 {% endblock %}

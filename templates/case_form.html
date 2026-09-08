@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ "Edit" if case else "Create" }} Case -- PHIN{% endblock %}
 {% block page_title %}{{ "Edit" if case else "Create" }} Case{% endblock %}
-{% block page_subtitle %}FR 2.2.4.2.1 -- Case Investigation Record{% endblock %}
+{% block page_subtitle %}.1 -- Case Investigation Record{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center mb-4">
@@ -104,7 +104,7 @@
                   <option value="{{ s }}" {{ 'selected' if fd and fd.case_status == s else '' }}>{{ s }}</option>
                   {% endfor %}
                 </select>
-                <small style="color:var(--text-muted);font-size:11px">NFR 2.1.2 -- Strict validation</small>
+                <small style="color:var(--text-muted);font-size:11px">Strict validation</small>
               </div>
             </div>
 
@@ -132,12 +132,12 @@
             </div>
           </div>
 
-          <!-- Custom Fields (NFR 2.1.1) -->
+          <!-- Custom Fields -->
           {% if custom_fields %}
           <div class="section-divider"></div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:16px">
             <i class="fa-solid fa-sliders me-1 text-teal"></i> Custom Fields
-            <span class="badge badge-teal ms-1">Dynamic -- NFR 2.1.1</span>
+            <span class="badge badge-teal ms-1">Dynamic -- </span>
           </div>
           <div class="row g-3">
             {% set extra = {} %}

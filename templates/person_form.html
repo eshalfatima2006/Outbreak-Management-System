@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ "Edit" if person else "Create" }} Person -- PHIN{% endblock %}
 {% block page_title %}{{ "Edit" if person else "Register" }} Person{% endblock %}
-{% block page_subtitle %}FR 2.2.1.1 -- Person Demographics{% endblock %}
+{% block page_subtitle %}Person Demographics{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center mb-4">
@@ -61,7 +61,7 @@
                 <input type="date" id="dob" name="dob" class="form-control"
                   value="{{ fd.dob.strftime('%Y-%m-%d') if fd and fd.dob and fd.dob is not string else (fd.dob if fd else '') }}"
                   max="{{ now.strftime('%Y-%m-%d') }}" required />
-                <small style="color:var(--text-muted);font-size:11px">Must be a past date (NFR 2.1.2)</small>
+                <small style="color:var(--text-muted);font-size:11px">Must be a past date</small>
               </div>
             </div>
 
@@ -89,7 +89,7 @@
                 <input type="text" id="phone" name="phone" class="form-control"
                   value="{{ fd.phone if fd else '' }}" placeholder="Digits only, e.g. 5551234567"
                   pattern="\d*" title="Digits only" />
-                <small style="color:var(--text-muted);font-size:11px">Digits only -- no dashes or spaces (NFR 2.1.2)</small>
+                <small style="color:var(--text-muted);font-size:11px">Digits only -- no dashes or spaces</small>
               </div>
             </div>
 
